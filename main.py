@@ -1,75 +1,115 @@
-
+# -*- coding: utf-8 -*-
 import requests 
 from bs4 import BeautifulSoup as BS
-#import sqlite3
+import sqlite3
 
-from datetime import datetime
-dtime =datetime.now()
-
-result = requests.get("https://www.worldometers.info/coronavirus/country/georgia/")
-
-soup = BS(result.text, "lxml")
 
 def corona_statistics():
-    highest_daily_case = 5450
-    highest_daily_death = 53
+
+    # import date and time module
+    from datetime import datetime
+    dtime =datetime.now()
+
+    # starte parsing 
+    result = requests.get("https://www.worldometers.info/coronavirus/country/georgia/")
+    soup = BS(result.text, "lxml")
     
-    corona_cases=int(soup.select(".maincounter-number  span")[0].getText().replace(",","").replace(" ",""))
-    death = int(soup.select(".maincounter-number span")[1].getText().replace(",","").replace(" ",""))
-    new_death= int(soup.select(".news_li strong")[1].getText().split()[0])
+    # connect and create cursor
+    #conn = sqlite3.connect('coronadata.dt')
+    #c = conn.cursor()
+    
+    #create table
+    """c.execute('''CREATE TABLE stats(
+    date STRING, 
+    new_cases INTEGER, 
+    new_deaths INTEGER, 
+    active_cases INTEGER, 
+    total_corona_cases INTEGER,
+    total_cured INTEGER,
+    total_deaths INTEGER)
+    
+    ''');"""
+    
+    
+    #c.execute("""
+    #INSERT INTO stats VALUES (
+    # ('12/05/20', 5450, 37, 0, 158154, 0, 1462))
+    #('19/05/20', 2904, 53, 0, 206907, 0, 2055)""")
+    
+    
+
     
     new_cases= int(soup.select(".news_li strong")[0].getText().split()[0])
-    got_cured = int(soup.select(".maincounter-number span")[2].getText().replace(",","").replace(" ",""))
-    old_got_cured =0
-    new_curred= 0
+    new_deaths= int(soup.select(".news_li strong")[1].getText().split()[0])
+    total_deaths = int(soup.select(".maincounter-number span")[1].getText().replace(",","").replace(" ",""))
+    total_corona_cases=int(soup.select(".maincounter-number  span")[0].getText().replace(",","").replace(" ",""))
+    total_cured = int(soup.select(".maincounter-number span")[2].getText().replace(",","").replace(" ",""))
+    active_cases = total_corona_cases - total_cured - total_deaths
+
     
-    if new_cases > highest_daily_case:
-        highest_daily_case = new_cases 
-    if new_death > highest_daily_death:
-        highest_daily_death = new_death  
-    if got_cured > old_got_cured:
-        new_curred = got_cured - old_got_cured
-        old_got_cured = got_cured   
-    active_cases = corona_cases - got_cured - death
-    print(f"* მთლიანობაში დაღუპულია {death:,} ადამიანი {corona_cases:,} შემთხვევიდან. \nსიკვდილიანობის პროცენტული მაჩვენებელი არის {death / corona_cases :.2%}.")
+    conn = sqlite3.connect('coronadata.dt')
+    c = conn.cursor()
+    # create query
+    c.execute(""" SELECT * from stats""")
+    #export list data
+    data_list = c.fetchall()
+    conn.commit()
+    conn.close()
+    # insert new data in database  after 12:00 pm
+    if int(dtime.strftime("%H")) >= 12:
+        #conn = sqlite3.connect('coronadata.dt')
+        #c = conn.cursor()
+        for d in data_list:
+            if d[0] !=dtime.strftime("%x"):
+                conn = sqlite3.connect('coronadata.dt')
+                c = conn.cursor()
+                c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?)""" ,
+                (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths))
+                conn.commit()
+                conn.close()
+
+
+    return new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths
+
+new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths = corona_statistics()
+
+
+
+#second function for printing
+def print_data():
+    from datetime import datetime
+    dtime =datetime.now()
+
+
+
     print()
-    print(f"* გამოჯანმრთელებულია {got_cured:,} ადამიანი რაც არის {got_cured/ (corona_cases) :.2%}." )
+    print(f"* მთლიანობაში დაღუპულია {total_deaths:,} ადამიანი {total_corona_cases:,} შემთხვევიდან. \nსიკვდილიანობის პროცენტული მაჩვენებელი არის {total_deaths / total_corona_cases :.2%}.")
     print()
-    print(f"* ამჟამად მკურნალობას გადის {active_cases+new_cases:,} დაავადებულების {active_cases/ (corona_cases +new_cases):.2%}.")
+    print(f"* გამოჯანმრთელებულია {total_cured:,} ადამიანი რაც არის {total_cured/ (total_corona_cases) :.2%}." )
     print()
-    print(f"* დღევანდელი მონაცემებით გვაქვს დაინფიცირების {new_cases} შემთხვევა.")# რაც არის {new_cases/highest_daily_case :.2%}")#\nმაქსიმალური დაინფიცირების მაჩვენებლისა რომელიც იყო {highest_daily_case}, გასული წლის 5 დეკემბერს.")
+    print(f"* ამჟამად მკურნალობას გადის {active_cases:,} დაავადებულების {active_cases/ total_corona_cases:.2%}.")
     print()
-    #print(f"* გამოჯანმრთელებულთა რიცხვი უდრის {new_curred}.")
+    print(f"* დღევანდელი მონაცემებით გვაქვს დაინფიცირების {new_cases}")# შემთხვევა რაც არის {new_cases/highest_daily_case :.2%}\nმაქსიმალური დაინფიცირების მაჩვენებლისა რომელიც იყო {highest_daily_case}, გასული წლის 5 დეკემბერს.")
+    print()
+    #print(f"* დღევანდელი გამოჯანმრთელებულთა რიცხვი უდრის {new_curred}.")
     #print()
-    print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_death}.") #\nრაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_death/highest_daily_death :.2%} არის. \nმაქსიმალური იყო გასული წლის 19 დეკემბერს: 53 ადამიანი.")
+    print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.") #\nრაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_death/highest_daily_death :.2%} არის. \nმაქსიმალური იყო {highest_daily_death}.")
     print()
     print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ ბოლო 1 თვეა, რიცხვები იკლებს.")
-    return " "
-    
-corona_statistics()
 
-# Database connecting 
-#conn = sqlite3.connect('corona_data.dt')
-# Create cursor
-#c = conn.cursor()
+#print_data()  
 
-"""c.execute('''CREATE TABLE stats(
-id INTEGER PRIMARY KEY,
-date TEXT, 
-new_cases INTEGER, 
-new_deaths INTEGER, 
-got_cured INTEGER, 
-total_corona_cases INTEGER,
-total_cured INTEGER,
-total_deaths INTEGER)
-''');
-"""
+conn = sqlite3.connect('coronadata.dt')
+c = conn.cursor()
+#c.execute("DELETE  FROM stats WHERE rowid > '2'")
+c.execute("SELECT rowid, * FROM stats")
+mylist = c.fetchall()
+for item in mylist:
+    print(item)  
 
-# commi our comand 
-#conn.commit()
+conn.commit()
+conn.close()
 
-# close our connection 
-#conn.close()
+if __name__=="__main__":
+    corona_statistics()
 
-
-#if __name__=="__main__":
