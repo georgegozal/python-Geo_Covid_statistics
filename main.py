@@ -6,11 +6,11 @@ import sqlite3
 
 def corona_statistics():
 
-    # import date and time module
+    #import date and time module
     from datetime import datetime
     dtime =datetime.now()
 
-    # starte parsing 
+    # start parsing 
     result = requests.get("https://www.worldometers.info/coronavirus/country/georgia/")
     soup = BS(result.text, "lxml")
     
@@ -50,25 +50,41 @@ def corona_statistics():
     conn = sqlite3.connect('coronadata.dt')
     c = conn.cursor()
     # create query
-    c.execute(""" SELECT * from stats""")
+    #c.execute(""" SELECT * from stats""")
+    c.execute("SELECT rowid, date FROM stats ORDER BY 1 DESC LIMIT 1")
     #export list data
     data_list = c.fetchall()
     conn.commit()
     conn.close()
+    #for i in data_list:
+    #    print(i)
+    #print(data_list[0][1])
     # insert new data in database  after 12:00 pm
-    if int(dtime.strftime("%H")) >= 12:
+    if int(dtime.strftime("%H")) >= 9:
         #conn = sqlite3.connect('coronadata.dt')
         #c = conn.cursor()
-        for d in data_list:
-            if d[0] !=dtime.strftime("%x"):
-                conn = sqlite3.connect('coronadata.dt')
-                c = conn.cursor()
-                c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?)""" ,
-                (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths))
-                conn.commit()
-                conn.close()
-
-
+        #for d in data_list:
+        #    if d[0] !=dtime.strftime("%x"):
+        #        conn = sqlite3.connect('coronadata.dt')
+        #        c = conn.cursor()
+        #        c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?)""" ,
+        #        (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths))
+        #        #break
+        #        conn.commit()
+        #        conn.close()
+        #for i in data_list:
+            #if i !=dtime.strftime("%x"):
+        if data_list[0][1]!=dtime.strftime("%x"):
+            conn = sqlite3.connect('coronadata.dt')
+            c = conn.cursor()
+            c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?)""" ,
+            (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths))
+            conn.commit()
+            conn.close()
+    #print(type(data_list[0][1]))
+    #print(dtime.strftime("%x"))
+    #print(type(dtime.strftime("%x")))        
+    #print(data_list[0][1]==dtime.strftime("%x"))
     return new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths
 
 new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths = corona_statistics()
@@ -95,13 +111,15 @@ def print_data():
     #print()
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.") #\nრაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_death/highest_daily_death :.2%} არის. \nმაქსიმალური იყო {highest_daily_death}.")
     print()
-    print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ ბოლო 1 თვეა, რიცხვები იკლებს.")
+    print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
 
-#print_data()  
-
+print_data()  
+print()
+#print("after change")
+print()
 conn = sqlite3.connect('coronadata.dt')
 c = conn.cursor()
-#c.execute("DELETE  FROM stats WHERE rowid > '2'")
+#c.execute("DELETE  FROM stats WHERE rowid > '7'")
 c.execute("SELECT rowid, * FROM stats")
 mylist = c.fetchall()
 for item in mylist:
@@ -110,6 +128,8 @@ for item in mylist:
 conn.commit()
 conn.close()
 
-if __name__=="__main__":
-    corona_statistics()
 
+
+#if __name__=="__main__":
+#    corona_statistics()
+#    print_data()
