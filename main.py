@@ -60,18 +60,41 @@ def print_data():
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.\n") #\nრაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_death/highest_daily_death :.2%} არის. \nმაქსიმალური იყო {highest_daily_death}.")
     print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
 
-#print_data()  
 
+# export data from database into lists 
 conn = sqlite3.connect('coronadata.dt')
 c = conn.cursor()
-c.execute("SELECT rowid, * FROM stats")
-mylist = c.fetchall()
-for item in mylist:
-    print(item)  
+
+c.execute("SELECT rowid FROM stats")
+r=[i[0] for i in c.fetchall()]
+c.execute("SELECT date FROM stats")
+d=[i[0] for i in  c.fetchall()]
+c.execute("SELECT new_cases FROM stats")
+nc = [i[0] for i in  c.fetchall()]
+c.execute("SELECT new_deaths FROM stats")
+nd = [i[0] for i in  c.fetchall()]
+c.execute("SELECT active_cases FROM stats")
+ac =[i[0] for i in  c.fetchall()]
+c.execute("SELECT total_corona_cases FROM stats")
+tcc = [i[0] for i in  c.fetchall()]
+c.execute("SELECT total_cured FROM stats")
+tc= [i[0] for i in  c.fetchall()]
+c.execute("SELECT total_deaths FROM stats")
+td = [i[0] for i in  c.fetchall()]
 
 conn.commit()
 conn.close()
 
+# creating list of lists and list of keys for dictionary 
+my_data_list = [r,d,nc,nd,ac,tcc,tc,td]
+keys = ['id','date', 'new_case', 'new_death', 'active_case', 'total_corona_case', 'total_cured','total_deaths']
+
+#importing pandas for DataFrame
+import pandas as pd
+from pandas import DataFrame
+# creating DataFrame and printing
+my_data_frame = DataFrame(dict(zip(keys,my_data_list)))
+print("\n",my_data_frame)
 
 
 if __name__=="__main__":
