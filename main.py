@@ -91,7 +91,7 @@ conn.close()
 
 # creating list of lists and list of keys for dataframe
 my_data_list = [r,d,nc,nd,ac,tcc,tc,td]
-keys = ['id','date', 'new_case', 'new_death', 'active_case', 'total_corona_case', 'total_cured','total_deaths']
+keys = ['Id','Date', 'New cases', 'New deaths', 'Active cases', 'Corona cases', 'Got cured','Total deaths']
 
 #importing pandas for DataFrame
 import pandas as pd
