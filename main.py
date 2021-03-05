@@ -26,16 +26,18 @@ def corona_statistics():
     c = conn.cursor()
     # create query
     c.execute("SELECT rowid, date FROM stats ORDER BY 1 DESC LIMIT 1")
-    #export list data
+    #export list column date`s data
     data_list = c.fetchall()
     conn.commit()
     conn.close()
     # change database data 
+    # if current time  > 9:00 continue 
     if int(dtime.strftime("%H")) >= 9:
-        
+        #if our data from database is not the same as todays date then continue 
         if data_list[0][1]!=dtime.strftime("%x"):
             conn = sqlite3.connect('coronadata.dt')
             c = conn.cursor()
+            #insert values in the database 
             c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?)""" ,
             (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths))
             conn.commit()
@@ -48,6 +50,7 @@ new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deat
 
 #second function for printing
 def print_data():
+    # again import datetime for printing date
     from datetime import datetime
     dtime =datetime.now()
     print()
@@ -59,11 +62,12 @@ def print_data():
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.\n") #\nრაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_death/highest_daily_death :.2%} არის. \nმაქსიმალური იყო {highest_daily_death}.")
     print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
 
+# importing numpy library to create numpy arrays instead of lists
 import numpy as np
 # export data from database into lists 
 conn = sqlite3.connect('coronadata.dt')
 c = conn.cursor()
-# create numpy arrays with database columnes data
+# create numpy arrays with database column`s data
 c.execute("SELECT rowid FROM stats")
 r=np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT date FROM stats")
@@ -85,7 +89,7 @@ td = np.array([i[0] for i in  c.fetchall()])
 conn.commit()
 conn.close()
 
-# creating list of lists and list of keys for dictionary 
+# creating list of lists and list of keys for dataframe
 my_data_list = [r,d,nc,nd,ac,tcc,tc,td]
 keys = ['id','date', 'new_case', 'new_death', 'active_case', 'total_corona_case', 'total_cured','total_deaths']
 
