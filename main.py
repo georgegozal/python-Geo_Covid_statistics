@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-import requests 
-from bs4 import BeautifulSoup as BS
 import sqlite3
 
 
 def corona_statistics():
-
+    import requests 
+    from bs4 import BeautifulSoup as BS
     #import date and time module
     from datetime import datetime
     dtime =datetime.now()
@@ -60,28 +59,29 @@ def print_data():
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.\n") #\nრაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_death/highest_daily_death :.2%} არის. \nმაქსიმალური იყო {highest_daily_death}.")
     print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
 
-
+import numpy as np
 # export data from database into lists 
 conn = sqlite3.connect('coronadata.dt')
 c = conn.cursor()
-
+# create numpy arrays with database columnes data
 c.execute("SELECT rowid FROM stats")
-r=[i[0] for i in c.fetchall()]
+r=np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT date FROM stats")
-d=[i[0] for i in  c.fetchall()]
+d = np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT new_cases FROM stats")
-nc = [i[0] for i in  c.fetchall()]
+nc = np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT new_deaths FROM stats")
-nd = [i[0] for i in  c.fetchall()]
+nd = np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT active_cases FROM stats")
-ac =[i[0] for i in  c.fetchall()]
+ac =np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT total_corona_cases FROM stats")
-tcc = [i[0] for i in  c.fetchall()]
+tcc = np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT total_cured FROM stats")
-tc= [i[0] for i in  c.fetchall()]
+tc= np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT total_deaths FROM stats")
-td = [i[0] for i in  c.fetchall()]
-
+td = np.array([i[0] for i in  c.fetchall()])
+#td=[i[0] for i in  c.fetchall()]  #this two line
+#td=np.array(d)                    #does the same 
 conn.commit()
 conn.close()
 
