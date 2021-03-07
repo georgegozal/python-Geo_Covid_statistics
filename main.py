@@ -96,7 +96,7 @@ keys = ['Id','Date', 'New cases', 'New deaths', 'Active cases', 'Corona cases', 
 import pandas as pd
 from pandas import DataFrame
 # creating DataFrame and printing
-my_data_frame = DataFrame(dict(zip(keys,my_data_list)))
+my_data_frame = DataFrame(dict(zip(keys,my_data_list))).set_index('Id')
 print("\n",my_data_frame)
 
 
