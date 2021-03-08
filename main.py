@@ -83,8 +83,6 @@ c.execute("SELECT total_cured FROM stats")
 tc= np.array([i[0] for i in  c.fetchall()])
 c.execute("SELECT total_deaths FROM stats")
 td = np.array([i[0] for i in  c.fetchall()])
-#td=[i[0] for i in  c.fetchall()]  #this two line
-#td=np.array(d)                    #does the same 
 conn.commit()
 conn.close()
 
@@ -98,7 +96,6 @@ from pandas import DataFrame
 # creating DataFrame and printing
 my_data_frame = DataFrame(dict(zip(keys,my_data_list))).set_index('Id')
 print("\n",my_data_frame)
-
 
 if __name__=="__main__":
     corona_statistics()
