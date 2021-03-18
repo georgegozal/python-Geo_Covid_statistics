@@ -70,41 +70,14 @@ def print_data():
     print('* აცრა დაიწყო 15 მარტს ასტრა ზენეკას ვაქცინით. \n')
     #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
 
-# importing numpy library to create numpy arrays instead of lists
-import numpy as np
-# export data from database into lists 
-conn = sqlite3.connect('coronadata.dt')
-c = conn.cursor()
-# create numpy arrays with database column`s data
-c.execute("SELECT rowid FROM stats")
-r=np.array([i[0] for i in  c.fetchall()], dtype='int16')
-c.execute("SELECT date FROM stats")
-d = np.array([i[0] for i in  c.fetchall()])
-c.execute("SELECT new_cases FROM stats")
-nc = np.array([i[0] for i in  c.fetchall()],dtype='int32')
-c.execute("SELECT new_deaths FROM stats")
-nd = np.array([i[0] for i in  c.fetchall()],dtype='int16')
-c.execute("SELECT active_cases FROM stats")
-ac =np.array([i[0] for i in  c.fetchall()],dtype='int32')
-c.execute("SELECT total_corona_cases FROM stats")
-tcc = np.array([i[0] for i in  c.fetchall()],dtype='int64')
-c.execute("SELECT total_cured FROM stats")
-tc= np.array([i[0] for i in  c.fetchall()],dtype='int64')
-c.execute("SELECT total_deaths FROM stats")
-td = np.array([i[0] for i in  c.fetchall()],dtype='int32')
 
-conn.commit()
-conn.close()
-
-# creating list of lists and list of keys for dataframe
-my_data_list = [r,d,nc,nd,ac,tcc,tc,td]
-keys = ['Id','Date', 'New cases', 'New deaths', 'Active cases', 'Corona cases', 'Got cured','Total deaths']
-
-#importing pandas for DataFrame
 import pandas as pd
 from pandas import DataFrame
-# creating DataFrame and printing
-my_data_frame = DataFrame(dict(zip(keys,my_data_list))).set_index('Id')
+conn = sqlite3.connect("coronadata.dt")
+sql_query = ''' SELECT rowid,* FROM stats; '''
+
+my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
+my_data_frame.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases','Got recovered','Total deaths']
 
 print("\n",my_data_frame)
 #print("\n", my_data_frame.describe())
