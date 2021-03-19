@@ -71,18 +71,20 @@ def print_data():
     #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
 
 
-import pandas as pd
-from pandas import DataFrame
-conn = sqlite3.connect("coronadata.dt")
-sql_query = ''' SELECT rowid,* FROM stats; '''
 
-my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
-my_data_frame.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases','Got recovered','Total deaths']
+def dataframe():
+    import pandas as pd
+    from pandas import DataFrame
+    conn = sqlite3.connect("coronadata.dt")
+    sql_query = ''' SELECT rowid,* FROM stats; '''
 
-print("\n",my_data_frame)
-#print("\n", my_data_frame.describe())
+    my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
+    my_data_frame.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases','Got recovered','Total deaths']
 
+    print("\n",my_data_frame)
+    #print("\n", my_data_frame.describe()) # describe 
 
 if __name__=="__main__":
     corona_statistics()
+    dataframe()
     print_data()
