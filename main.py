@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-
+import time
 
 def corona_statistics():
     import requests 
@@ -40,7 +40,7 @@ def corona_statistics():
             c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?)""" ,
             (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths))
             conn.commit()
-            conn.close()
+            conn.close()       
     return new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths
 
 new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths = corona_statistics()
@@ -69,7 +69,7 @@ def print_data():
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.\n რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_deaths/int(max_dths[0][0]) :.2%} არის. \nმაქსიმალური იყო {max_dths[0][0]}, {max_dths[0][1]}. \n")
     print('* აცრა დაიწყო 15 მარტს ასტრა ზენეკას ვაქცინით. \n')
     #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
-
+    
 
 
 def dataframe():
@@ -78,13 +78,16 @@ def dataframe():
     conn = sqlite3.connect("coronadata.dt")
     sql_query = ''' SELECT rowid,* FROM stats; '''
 
-    my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
+
+    my_data_frame =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date')                        
+    #my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
     my_data_frame.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases','Got recovered','Total deaths']
-
+    
     print("\n",my_data_frame)
+    #print("\n",my_data_frame.tail())
     #print("\n", my_data_frame.describe()) # describe 
-
+    #print(my_data_frame.info())
 if __name__=="__main__":
-    corona_statistics()
+    #corona_statistics()
     dataframe()
-    print_data()
+    #print_data()
