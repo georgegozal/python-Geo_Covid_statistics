@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-import time
 
 def corona_statistics():
     import requests 
@@ -88,6 +87,6 @@ def dataframe():
     #print("\n", my_data_frame.describe()) # describe 
     #print(my_data_frame.info())
 if __name__=="__main__":
-    #corona_statistics()
+    corona_statistics()
     dataframe()
-    #print_data()
+    print_data()
