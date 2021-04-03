@@ -65,12 +65,12 @@ def print_data():
     conn.close()
 
     print("\n", dtime.strftime("%d %B %Y ამ დროის მონაცემებით შედეგები ასეთია: \n"))
-    print(f"* მთლიანობაში დაღუპულია {total_deaths:,} ადამიანი {total_corona_cases:,} შემთხვევიდან. \nსიკვდილიანობის პროცენტული მაჩვენებელი არის {total_deaths / total_corona_cases :.2%}. \n")
-    print(f"* გამოჯანმრთელებულია {total_cured:,} ადამიანი რაც არის {total_cured/ (total_corona_cases) :.2%}.\n" )
+    print(f"* მთლიანობაში დაღუპულია {total_deaths:,} ადამიანი {total_corona_cases:,} შემთხვევიდან. სიკვდილიანობის პროცენტული მაჩვენებელი არის {total_deaths / total_corona_cases :.2%}. \n")
+    print(f"* გამოჯანმრთელებულია {total_cured:,} ადამიანი რაც არის {total_cured/ (total_corona_cases) :.2%}. \n" )
     print(f"* ამჟამად მკურნალობას გადის {active_cases:,} დაავადებულების {active_cases/ total_corona_cases:.2%}.\n")
     print(f"* დღევანდელი მონაცემებით გვაქვს დაინფიცირების {new_cases} შემთხვევა რაც არის {new_cases/int(max_nc[0][0]) :.2%}\nმაქსიმალური დაინფიცირების მაჩვენებლისა რომელიც იყო {max_nc[0][0]}, {max_nc[0][1]} . \n")
-    print(f'* დღევანდელი მონაცემებით დატესტილია სულ {antigen_test+pcr_test}, \n {antigen_test} იყო ანტიგენის ტესტი {pcr_test} PCR ტესტი.\n დაინფიცირების მაჩვენებელი არის {new_cases / (antigen_test+pcr_test):.2%}. \n')
-    print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}.\n რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_deaths/int(max_dths[0][0]) :.2%} არის. \nმაქსიმალური იყო {max_dths[0][0]}, {max_dths[0][1]}. \n")
+    print(f'* დღევანდელი მონაცემებით დატესტილია სულ {antigen_test+pcr_test}, {antigen_test} იყო ანტიგენის ტესტი {pcr_test} PCR ტესტი. დაინფიცირების მაჩვენებელი არის {new_cases / (antigen_test+pcr_test):.2%}. \n')
+    print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}. რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_deaths/int(max_dths[0][0]) :.2%} არის. \nმაქსიმალური იყო {max_dths[0][0]}, {max_dths[0][1]}. \n")
     print('* აცრა დაიწყო 15 მარტს ასტრა ზენეკას ვაქცინით. \n')
     #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
     
@@ -85,13 +85,13 @@ def dataframe():
 
     my_data_frame =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date')                        
     #my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
-    my_data_frame.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases','Got recovered','Total deaths', 'Antigen test', 'PCR test']
+    my_data_frame.columns=[ 'Date, ', 'New cases, ', 'New deaths, ', 'Active cases, ', 'Total Corona cases, ', 'Got recovered, ', 'Total deaths, ', 'Antigen test, ', 'PCR test. ']
     
     #print("\n",my_data_frame)
     print("\n",my_data_frame.tail(15))
     #print("\n", my_data_frame.describe()) # describe 
     #print(my_data_frame.info())
 if __name__=="__main__":
-    corona_statistics()
+    #corona_statistics()
     dataframe()
     print_data()
