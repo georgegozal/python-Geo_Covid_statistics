@@ -85,12 +85,19 @@ def dataframe():
 
     my_data_frame =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date')                        
     #my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
-    my_data_frame.columns=[ 'Date, ', 'New cases, ', 'New deaths, ', 'Active cases, ', 'Total Corona cases, ', 'Got recovered, ', 'Total deaths, ', 'Antigen test, ', 'PCR test. ']
+    my_data_frame.columns=[ 'Date,', 'New cases,', 'New deaths,', 'Active cases,', 'Total Corona cases,', 'Got recovered,', 'Total deaths,', 'Antigen test,', 'PCR test.']
     
+    # convert last two columns object to int
+    my_data_frame['PCR test.']=my_data_frame['PCR test.'].astype('int32')
+    my_data_frame['Antigen test,']=my_data_frame['Antigen test,'].astype('int32')
+    #print(my_data_frame.dtypes)
+
     #print("\n",my_data_frame)
-    print("\n",my_data_frame.tail(15))
+    print("\n",my_data_frame.tail(9))
     #print("\n", my_data_frame.describe()) # describe 
-    #print(my_data_frame.info())
+    #print('\n', my_data_frame.info())
+
+
 if __name__=="__main__":
     #corona_statistics()
     dataframe()
