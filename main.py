@@ -15,7 +15,7 @@ def corona_statistics():
     wsoup = BS(ge_result.text, features='lxml')
 
     # colect data
-    new_cases= int(soup.select(".news_li strong")[0].getText().split()[0])
+    new_cases= int(soup.select(".news_li strong")[0].getText().split()[0].replace(",",""))
     new_deaths= int(soup.select(".news_li strong")[1].getText().split()[0])
     total_deaths = int(soup.select(".maincounter-number span")[1].getText().replace(",","").replace(" ",""))
     total_corona_cases=int(soup.select(".maincounter-number  span")[0].getText().replace(",","").replace(" ",""))
@@ -78,7 +78,7 @@ def print_data():
 
 def dataframe():
     import pandas as pd
-    from pandas import DataFrame
+    #from pandas import DataFrame
     conn = sqlite3.connect("coronadata.dt")
     sql_query = ''' SELECT rowid,* FROM stats; '''
 
@@ -90,9 +90,10 @@ def dataframe():
     # convert last two columns object to int
     my_data_frame['PCR test.']=my_data_frame['PCR test.'].astype('int32')
     my_data_frame['Antigen test,']=my_data_frame['Antigen test,'].astype('int32')
+    my_data_frame['positive %']=round((my_data_frame['New cases,'] *100) / (my_data_frame['Antigen test,']+my_data_frame['PCR test.']),2)
     #print(my_data_frame.dtypes)
 
-    #print("\n",my_data_frame)
+    #print("\n",my_data_frame['New deaths,'].value_counts())
     print("\n",my_data_frame.tail(9))
     #print("\n", my_data_frame.describe()) # describe 
     #print('\n', my_data_frame.info())
