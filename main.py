@@ -24,7 +24,7 @@ def corona_statistics():
 
     antigen_test = int( wsoup.select('.statistic-square')[1].select('.quantity-numver')[1].text)
     pcr_test = int(wsoup.select('.statistic-square')[1].select('.quantity-numver')[2].text)
-    
+    percent = round(new_cases / (antigen_test+pcr_test) *100 ,2)
     conn = sqlite3.connect('coronadata.dt')
     c = conn.cursor()
     # create query
@@ -40,8 +40,8 @@ def corona_statistics():
             conn = sqlite3.connect('coronadata.dt')
             c = conn.cursor()
             #insert values in the database 
-            c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?,?,?)""" ,
-            (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths,antigen_test,pcr_test))
+            c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?,?,?,?)""" ,
+            (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths,antigen_test,pcr_test,percent))
             conn.commit()
             conn.close()       
     return new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths, antigen_test, pcr_test
@@ -73,7 +73,8 @@ def print_data():
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}. რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_deaths/int(max_dths[0][0]) :.2%} არის. \nმაქსიმალური იყო {max_dths[0][0]}, {max_dths[0][1]}. \n")
     print('* აცრა დაიწყო 15 მარტს ასტრა ზენეკას ვაქცინით. \n')
     #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
-    
+
+
 
 
 def dataframe():
@@ -83,21 +84,19 @@ def dataframe():
     sql_query = ''' SELECT rowid,* FROM stats; '''
 
 
-    my_data_frame =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date')                        
-    #my_data_frame = DataFrame(pd.read_sql(sql_query, conn)).set_index('rowid')
-    my_data_frame.columns=[ 'Date,', 'New cases,', 'New deaths,', 'Active cases,', 'Total Corona cases,', 'Got recovered,', 'Total deaths,', 'Antigen test,', 'PCR test.']
-    
-    # convert last two columns object to int
-    my_data_frame['PCR test.']=my_data_frame['PCR test.'].astype('int32')
-    my_data_frame['Antigen test,']=my_data_frame['Antigen test,'].astype('int32')
-    my_data_frame['positive %']=round((my_data_frame['New cases,'] *100) / (my_data_frame['Antigen test,']+my_data_frame['PCR test.']),2)
-    #print(my_data_frame.dtypes)
+    my_data_frame =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
+    my_data_frame.columns=[ 'Date,', 'New cases,', 'New deaths,', 'Active cases,', 'Total Corona cases,', 'Got recovered,', 'Total deaths,', 'Antigen test,', 'PCR test,', 'positive %.']
 
+    # convert last two columns object to int
+    my_data_frame['PCR test,']=my_data_frame['PCR test,'].astype('int32')
+    my_data_frame['Antigen test,']=my_data_frame['Antigen test,'].astype('int32')
+    #my_data_frame['positive %']=round((my_data_frame['New cases,'] *100) / (my_data_frame['Antigen test,']+my_data_frame['PCR test,']),2)
+    #print(my_data_frame.dtypes)
     #print("\n",my_data_frame['New deaths,'].value_counts())
     print("\n",my_data_frame.tail(9))
     #print("\n", my_data_frame.describe()) # describe 
     #print('\n', my_data_frame.info())
-
+    return my_data_frame
 
 if __name__=="__main__":
     #corona_statistics()
