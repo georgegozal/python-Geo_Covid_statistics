@@ -10,12 +10,13 @@ soup = BS(result.text, "lxml")
 countries = []
 for i in soup.select('.mt_a'):
     countries.append(i.text.lower().replace(" ","-"))
-
+countries = countries[:219]    
+print(len(countries))
 def corona_statistics(countries):
     from datetime import datetime
     dtime =datetime.now()
         
-    conn = sqlite3.connect('alldata.dt')
+    conn = sqlite3.connect('all_country_data.dt')
     c = conn.cursor()
     # create query
     c.execute("SELECT rowid, date FROM stats ORDER BY 1 DESC LIMIT 1")
@@ -53,7 +54,7 @@ def corona_statistics(countries):
                 except:
                     got_recovered=0
                 active_cases = total_corona_cases - got_recovered - total_deaths
-                conn = sqlite3.connect('alldata.dt')
+                conn = sqlite3.connect('all_country_data.dt')
                 c = conn.cursor()
                 #insert values in the database 
                 c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?,?)""" ,
@@ -65,7 +66,7 @@ def corona_statistics(countries):
 corona_statistics(countries)
 
 
-conn = sqlite3.connect("alldata.dt")
+conn = sqlite3.connect('all_country_data.dt')
 sql_query = ''' SELECT rowid,* FROM stats; '''
 
 mdf =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
@@ -77,7 +78,9 @@ print("\n",mdf.tail(9))
 #print("\n", mdf.describe()) # describe 
 #print('\n', mdf.info())
 
-    
+#export list column date`s data
+conn.commit()
+conn.close()    
 if __name__=="__main__":
     corona_statistics(countries)
     #dataframe()
