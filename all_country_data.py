@@ -10,8 +10,10 @@ soup = BS(result.text, "lxml")
 countries = []
 for i in soup.select('.mt_a'):
     countries.append(i.text.lower().replace(" ","-"))
-countries = countries[:219]    
-print(len(countries))
+countries = countries[:219]
+usa_to_us = countries.index('usa')
+countries[usa_to_us]='us'
+
 def corona_statistics(countries):
     from datetime import datetime
     dtime =datetime.now()
@@ -28,7 +30,7 @@ def corona_statistics(countries):
         #if our data from database is not the same as todays date then continue
         if date_r[0][1]!=dtime.strftime("%x"):
             
-            for country in countries:
+            for country in countries:    
                 result=requests.get(f'https://www.worldometers.info/coronavirus/country/{country}/')
                 soup = BS(result.text, "lxml")
                 
@@ -64,24 +66,25 @@ def corona_statistics(countries):
             
             
 corona_statistics(countries)
+def dataframe():
+    conn = sqlite3.connect('all_country_data.dt')
+    sql_query = ''' SELECT rowid,* FROM stats; '''
 
+    mdf =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
+    mdf.columns=[ 'Date','Country', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases', 'Got recovered', 'Total deaths']
+    return mdf
 
-conn = sqlite3.connect('all_country_data.dt')
-sql_query = ''' SELECT rowid,* FROM stats; '''
+while True:
+    question = input('Do you want to see data? (Y,N)')
+    if question in ('N','n'):
+        break
+    mdf=dataframe()
 
-mdf =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
-mdf.columns=[ 'Date,','Country', 'New cases,', 'New deaths,', 'Active cases,', 'Total Corona cases,', 'Got recovered,', 'Total deaths,']
+    country = input('\nwrite country name you are interestid with: ').lower()
+    print(mdf[mdf['Country']==country])
+    break
 
-#print(mdf.dtypes)
-#print("\n",mdf['New deaths,'].value_counts())
-print("\n",mdf.tail(9))
-#print("\n", mdf.describe()) # describe 
-#print('\n', mdf.info())
-
-#export list column date`s data
-conn.commit()
-conn.close()    
 if __name__=="__main__":
     corona_statistics(countries)
-    #dataframe()
+
 
