@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import sqlite3
+import pandas as pd
+from datetime import datetime
+dtime =datetime.now()
 
 def corona_statistics():
     import requests 
     from bs4 import BeautifulSoup as BS
-    #import date and time module
-    from datetime import datetime
-    dtime =datetime.now()
-
     # start parsing 
     result = requests.get("https://www.worldometers.info/coronavirus/country/georgia/")
     soup = BS(result.text, "lxml")
@@ -27,78 +26,55 @@ def corona_statistics():
     percent = round(new_cases / (antigen_test+pcr_test) *100 ,2)
     conn = sqlite3.connect('coronadata.dt')
     c = conn.cursor()
-    # create query
-    c.execute("SELECT rowid, date FROM stats ORDER BY 1 DESC LIMIT 1")
-    #export list column date`s data
-    date_r = c.fetchall()
-    conn.close()
-    # change database data 
-    # if current time  > 9:00 continue 
-    if int(dtime.strftime("%H")) >= 9:
-        #if our data from database is not the same as todays date then continue 
-        if date_r[0][1]!=dtime.strftime("%x"):
-            conn = sqlite3.connect('coronadata.dt')
-            c = conn.cursor()
-            #insert values in the database 
-            c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?,?,?,?)""" ,
-            (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths,antigen_test,pcr_test,percent))
-            conn.commit()
-            conn.close()       
-    return new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths, antigen_test, pcr_test
-
-new_cases, new_deaths, active_cases, total_corona_cases, total_cured, total_deaths, antigen_test, pcr_test = corona_statistics()
+    #insert values in the database 
+    c.execute("""INSERT INTO stats VALUES(?,?,?,?,?,?,?,?,?,?)""" ,
+        (dtime.strftime("%x"),new_cases,new_deaths, active_cases,total_corona_cases,total_cured,total_deaths,antigen_test,pcr_test,percent))
+    conn.commit()
+    conn.close()       
 
 
-
-#second function for printing
-def print_data():
-    # again import datetime for printing date
-    from datetime import datetime
-    dtime =datetime.now()
-    #import more data from database
+# check time and last row to run function 
+if int(dtime.strftime("%H")) >= 9:
     conn = sqlite3.connect('coronadata.dt')
     c = conn.cursor()
-    c.execute("SELECT MAX(new_cases), date FROM stats")
-    max_nc=c.fetchall()
-    c.execute("SELECT MAX(new_deaths), date FROM stats")
-    max_dths=c.fetchall()
-    conn.close()
-
-    print("\n", dtime.strftime("%d %B %Y ამ დროის მონაცემებით შედეგები ასეთია: \n"))
-    print(f"* მთლიანობაში დაღუპულია {total_deaths:,} ადამიანი {total_corona_cases:,} შემთხვევიდან. სიკვდილიანობის პროცენტული მაჩვენებელი არის {total_deaths / total_corona_cases :.2%}. \n")
-    print(f"* გამოჯანმრთელებულია {total_cured:,} ადამიანი რაც არის {total_cured/ (total_corona_cases) :.2%}. \n" )
-    print(f"* ამჟამად მკურნალობას გადის {active_cases:,} დაავადებულების {active_cases/ total_corona_cases:.2%}.\n")
-    print(f"* დღევანდელი მონაცემებით გვაქვს დაინფიცირების {new_cases} შემთხვევა რაც არის {new_cases/int(max_nc[0][0]) :.2%}\nმაქსიმალური დაინფიცირების მაჩვენებლისა რომელიც იყო {max_nc[0][0]}, {max_nc[0][1]} . \n")
-    print(f'* დღევანდელი მონაცემებით დატესტილია სულ {antigen_test+pcr_test}, {antigen_test} იყო ანტიგენის ტესტი {pcr_test} PCR ტესტი. დაინფიცირების მაჩვენებელი არის {new_cases / (antigen_test+pcr_test):.2%}. \n')
-    print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {new_deaths}. რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {new_deaths/int(max_dths[0][0]) :.2%} არის. \nმაქსიმალური იყო {max_dths[0][0]}, {max_dths[0][1]}. \n")
-    print('* აცრა დაიწყო 15 მარტს ასტრა ზენეკას ვაქცინით. \n')
-    #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
-
-
+    c.execute("SELECT rowid, date FROM stats ORDER BY 1 DESC LIMIT 1")
+    date = c.fetchone()[1]
+    conn.close() 
+    if date !=dtime.strftime("%x"):
+        corona_statistics()
 
 
 def dataframe():
-    import pandas as pd
-    #from pandas import DataFrame
+
     conn = sqlite3.connect("coronadata.dt")
     sql_query = ''' SELECT rowid,* FROM stats; '''
 
 
-    my_data_frame =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
-    my_data_frame.columns=[ 'Date,', 'New cases,', 'New deaths,', 'Active cases,', 'Total Corona cases,', 'Got recovered,', 'Total deaths,', 'Antigen test,', 'PCR test,', 'positive %.']
+    mdf =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
+    mdf.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases', 'Got recovered', 'Total deaths', 'Antigen test', 'PCR test', 'positive %']
 
     # convert last two columns object to int
-    my_data_frame['PCR test,']=my_data_frame['PCR test,'].astype('int32')
-    my_data_frame['Antigen test,']=my_data_frame['Antigen test,'].astype('int32')
-    #my_data_frame['positive %']=round((my_data_frame['New cases,'] *100) / (my_data_frame['Antigen test,']+my_data_frame['PCR test,']),2)
-    #print(my_data_frame.dtypes)
-    #print("\n",my_data_frame['New deaths,'].value_counts())
-    print("\n",my_data_frame.tail(9))
-    #print("\n", my_data_frame.describe()) # describe 
-    #print('\n', my_data_frame.info())
-    return my_data_frame
+    mdf['PCR test']=mdf['PCR test'].astype('int32')
+    mdf['Antigen test']=mdf['Antigen test'].astype('int32')
+    #mdf['positive %']=round((my_data_frame['New cases'] *100) / (my_data_frame['Antigen test']+my_data_frame['PCR test']),2)
+    #print(mdf.dtypes)
+    #print("\n",mdf['New deaths'].value_counts())
+    print("\n",mdf.tail(9))
+    #print("\n", mdf.describe()) # describe 
+    #print('\n', mdf.info())
 
+#mdf['Total Corona cases'].values[-1]
+    print("\n", dtime.strftime("%d %B %Y ამ დროის მონაცემებით შედეგები ასეთია: \n"))
+    print(f"* მთლიანობაში დაღუპულია {mdf['Total deaths'].values[-1]:,} ადამიანი {mdf['Total Corona cases'].values[-1]:,} შემთხვევიდან. სიკვდილიანობის პროცენტული მაჩვენებელი არის {mdf['Total deaths'].values[-1] / mdf['Total Corona cases'].values[-1] :.2%}. \n")
+    print(f"* გამოჯანმრთელებულია {mdf['Got recovered'].values[-1]:,} ადამიანი რაც არის {mdf['Got recovered'].values[-1] / mdf['Total Corona cases'].values[-1] :.2%}. \n" )
+    print(f"* ამჟამად მკურნალობას გადის {mdf['Active cases'].values[-1]:,} დაავადებულების {mdf['Active cases'].values[-1] / mdf['Total Corona cases'].values[-1]:.2%}.\n")
+    print(f"* დღევანდელი მონაცემებით გვაქვს დაინფიცირების {mdf['New cases'].values[-1]} შემთხვევა რაც არის ")#{new_cases/int(max_nc[0][0]) :.2%}\nმაქსიმალური დაინფიცირების მაჩვენებლისა რომელიც იყო {max_nc[0][0]}, {max_nc[0][1]} . \n")
+    print(f"* დღევანდელი მონაცემებით დატესტილია სულ {mdf['Antigen test'].values[-1] + mdf['PCR test'].values[-1]}: {mdf['Antigen test'].values[-1]} იყო ანტიგენის ტესტი {mdf['PCR test'].values[-1]} PCR ტესტი. დაინფიცირების მაჩვენებელი არის {mdf['positive %'].values[-1]}%. \n")
+    print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {mdf['New deaths'].values[-1]}. რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის")# {new_deaths/int(max_dths[0][0]) :.2%} არის. \nმაქსიმალური იყო {max_dths[0][0]}, {max_dths[0][1]}. \n")
+    #print('* აცრა დაიწყო 15 მარტს ასტრა ზენეკას ვაქცინით. \n')
+    #print("* როგორც ამ მონაცემებიდან ვხედავთ საკმაოდ პოზიტიურად მივდივართ.")# ბოლო 1 თვეა, რიცხვები იკლებს.
+
+    
 if __name__=="__main__":
-    #corona_statistics()
     dataframe()
-    print_data()
+    
