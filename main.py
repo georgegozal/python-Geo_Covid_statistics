@@ -93,7 +93,7 @@ def dataframe():
     #my_data_frame['positive %']=round((my_data_frame['New cases,'] *100) / (my_data_frame['Antigen test,']+my_data_frame['PCR test,']),2)
     #print(my_data_frame.dtypes)
     #print("\n",my_data_frame['New deaths,'].value_counts())
-    print("\n",my_data_frame.tail(9))
+    print("\n",my_data_frame.tail(19))
     #print("\n", my_data_frame.describe()) # describe 
     #print('\n', my_data_frame.info())
     return my_data_frame
