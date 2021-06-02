@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import sqlite3
 import pandas as pd
 from datetime import datetime
@@ -12,7 +13,7 @@ def corona_statistics():
     soup = BS(result.text, "lxml")
     ge_result = requests.get('https://stopcov.ge/ka/')
     wsoup = BS(ge_result.text, features='lxml')
-
+    d='https://www.medalerts.org/vaersdb/findfield.php?EVENTS=on&PAGENO=1&PERPAGE=10&ESORT&REVERSESORT&VAX=(COVID19)&VAXTYPES=(COVID-19)&DIED=Yes&fbclid=IwAR1d3IoDPYk3t1hkUMTY4ArIFK4iiW90CxBXnbarmeMHJlKRq_yPJQcGRwk'
     # colect data
     new_cases= int(soup.select(".news_li strong")[0].getText().split()[0].replace(",",""))
     new_deaths= int(soup.select(".news_li strong")[1].getText().split()[0])
