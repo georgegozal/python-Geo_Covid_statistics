@@ -6,7 +6,6 @@ from datetime import datetime
 dtime =datetime.now()
 
 def replace(soup, selector, st=0):
-
     return int(soup.select(selector)[st].getText().split()[0].replace(",",""))
 
 
@@ -24,6 +23,7 @@ def corona_statistics():
     new_cases= replace(soup, ".news_li strong", 0)
 
     # new_cases= int(soup.select(".news_li strong")[0].getText().split()[0].replace(",",""))
+    # TODO: replace with replace
     new_deaths= int(soup.select(".news_li strong")[1].getText().split()[0])
     total_deaths = int(soup.select(".maincounter-number span")[1].getText().replace(",","").replace(" ",""))
     total_corona_cases=int(soup.select(".maincounter-number  span")[0].getText().replace(",","").replace(" ",""))
@@ -60,17 +60,49 @@ def dataframe():
 
 
     mdf =pd.read_sql_query(sql_query, conn, index_col='rowid', parse_dates='date') 
-    mdf.columns=[ 'Date', 'New cases', 'New deaths', 'Active cases', 'Total Corona cases', 'Got recovered', 'Total deaths', 'Antigen test', 'PCR test', 'positive %']
+    mdf.columns=[ 
+        'Date', 
+        'New cases', 
+        'New deaths', 
+        'Active cases', 
+        'Total Corona cases', 
+        'Got recovered', 
+        'Total deaths', 
+        'Antigen test', 
+        'PCR test', 
+        'positive %',
+        ]
 
 
     print("\n",mdf.tail(9))
     #print("\n", mdf.describe()) # describe 
     ncases=mdf[mdf['New cases']==mdf['New cases'].max()]
     ndeaths=mdf[mdf['New deaths']==mdf['New deaths'].max()]
-    print("\n", dtime.strftime("%d %B %Y ამ დროის მონაცემებით შედეგები ასეთია: \n"))
-    print(f"* მთლიანობაში დაღუპულია {mdf['Total deaths'].values[-1]:,} ადამიანი {mdf['Total Corona cases'].values[-1]:,} შემთხვევიდან. სიკვდილიანობის პროცენტული მაჩვენებელი არის {mdf['Total deaths'].values[-1] / mdf['Total Corona cases'].values[-1] :.2%}. \n")
-    print(f"* გამოჯანმრთელებულია {mdf['Got recovered'].values[-1]:,} ადამიანი რაც არის {mdf['Got recovered'].values[-1] / mdf['Total Corona cases'].values[-1] :.2%}. \n" )
-    print(f"* ამჟამად მკურნალობას გადის {mdf['Active cases'].values[-1]:,} დაავადებულების {mdf['Active cases'].values[-1] / mdf['Total Corona cases'].values[-1]:.2%}.\n")
+
+    total_death = f" {mdf['Total deaths'].values[-1]:,}"
+    total_corona_case = f"{mdf['Total Corona cases'].values[-1]:,}"
+    total_death_percent = f" {mdf['Total deaths'].values[-1] / mdf['Total Corona cases'].values[-1] :.2%}. \n"
+    total_cured_case = f"{mdf['Got recovered'].values[-1] / mdf['Total Corona cases'].values[-1] :.2%}. \n"
+    total_recover = f"{mdf['Got recovered'].values[-1]:,}"
+    # TODO: ამოსატანია ცვლადები და ჩასასმელია to_print string-ში.
+
+
+    to_print = "\n"
+    to_print += dtime.strftime("%d %B %Y ამ დროის მონაცემებით შედეგები ასეთია: \n")
+    to_print += '* მთლიანობაში დაღუპულია'
+    to_print += total_death
+    to_print += f" ადამიანი {total_corona_case} შემთხვევიდან."
+    to_print += f" სიკვდილიანობის პროცენტული მაჩვენებელი არის "
+    to_print += total_death_percent
+
+    to_print += f"* გამოჯანმრთელებულია {total_recover} ადამიანი რაც არის "
+    to_print += total_cured_case
+
+    to_print += f"* ამჟამად მკურნალობას გადის "
+    to_print += f"{mdf['Active cases'].values[-1]:,} დაავადებულების "
+    to_print += f"{mdf['Active cases'].values[-1] / mdf['Total Corona cases'].values[-1]:.2%}.\n"
+
+    print(to_print)
     print(f"* დღევანდელი მონაცემებით გვაქვს დაინფიცირების {mdf['New cases'].values[-1]} შემთხვევა რაც არის {mdf['New cases'].values[-1] / ncases['New cases'].values[-1] :.2%}\nმაქსიმალური დაინფიცირების მაჩვენებლისა რომელიც იყო {ncases['New cases'].values[-1]}, {str(ncases['Date'].values[-1]).split('T')[0]}-ს . \n")
     print(f"* დღევანდელი მონაცემებით დატესტილია სულ {mdf['Antigen test'].values[-1] + mdf['PCR test'].values[-1]}: {mdf['Antigen test'].values[-1]} იყო ანტიგენის ტესტი {mdf['PCR test'].values[-1]} PCR ტესტი. დაინფიცირების მაჩვენებელი არის {mdf['positive %'].values[-1]}%. \n")
     print(f"* დღევანდელი რიცხვი სიკვდილიანობისა არის {mdf['New deaths'].values[-1]}. რაც მაქსიმალური დღიური სიკვდილიანობის მაჩვენებლის {mdf['New deaths'].values[-1] / ndeaths['New deaths'].values[-1] :.2%} არის. \nმაქსიმალური იყო {ndeaths['New deaths'].values[-1]}, {str(ndeaths['Date'].values[-1]).split('T')[0]}-ს. \n")
