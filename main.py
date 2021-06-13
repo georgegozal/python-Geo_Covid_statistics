@@ -10,11 +10,13 @@ def corona_statistics():
     from bs4 import BeautifulSoup as BS
     # start parsing 
     result = requests.get("https://www.worldometers.info/coronavirus/country/georgia/")
-    soup = BS(result.text, "lxml")
+    soup = BS(result.text, features='html.parser')
     ge_result = requests.get('https://stopcov.ge/ka/')
-    wsoup = BS(ge_result.text, features='lxml')
+    wsoup = BS(ge_result.text, features='html.parser')
     d='https://www.medalerts.org/vaersdb/findfield.php?EVENTS=on&PAGENO=1&PERPAGE=10&ESORT&REVERSESORT&VAX=(COVID19)&VAXTYPES=(COVID-19)&DIED=Yes&fbclid=IwAR1d3IoDPYk3t1hkUMTY4ArIFK4iiW90CxBXnbarmeMHJlKRq_yPJQcGRwk'
     # colect data
+    # create regex pattern
+    pattern = re.compile(r'\d*,?\d+')
     new_cases= int(soup.select(".news_li strong")[0].getText().split()[0].replace(",",""))
     new_deaths= int(soup.select(".news_li strong")[1].getText().split()[0])
     total_deaths = int(soup.select(".maincounter-number span")[1].getText().replace(",","").replace(" ",""))
@@ -72,4 +74,3 @@ def dataframe():
     
 if __name__=="__main__":
     dataframe()
-    
