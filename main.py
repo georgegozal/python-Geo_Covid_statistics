@@ -5,6 +5,11 @@ import pandas as pd
 from datetime import datetime
 dtime =datetime.now()
 
+def replace(soup, selector, st=0):
+
+    return int(soup.select(selector)[st].getText().split()[0].replace(",",""))
+
+
 def corona_statistics():
     import requests 
     from bs4 import BeautifulSoup as BS
@@ -15,9 +20,9 @@ def corona_statistics():
     wsoup = BS(ge_result.text, features='html.parser')
     d='https://www.medalerts.org/vaersdb/findfield.php?EVENTS=on&PAGENO=1&PERPAGE=10&ESORT&REVERSESORT&VAX=(COVID19)&VAXTYPES=(COVID-19)&DIED=Yes&fbclid=IwAR1d3IoDPYk3t1hkUMTY4ArIFK4iiW90CxBXnbarmeMHJlKRq_yPJQcGRwk'
     # colect data
-    # create regex pattern
-    pattern = re.compile(r'\d*,?\d+')
-    new_cases= int(soup.select(".news_li strong")[0].getText().split()[0].replace(",",""))
+    new_cases= replace(soup, ".news_li strong", 0)
+
+    # new_cases= int(soup.select(".news_li strong")[0].getText().split()[0].replace(",",""))
     new_deaths= int(soup.select(".news_li strong")[1].getText().split()[0])
     total_deaths = int(soup.select(".maincounter-number span")[1].getText().replace(",","").replace(" ",""))
     total_corona_cases=int(soup.select(".maincounter-number  span")[0].getText().replace(",","").replace(" ",""))
